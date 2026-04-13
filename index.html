@@ -6,13 +6,13 @@
     <title>Base de Conhecimento Comag</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    const SUPABASE_URL = 'https://nlfidalnxpqlnfvlsxph.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sZmlkYWxueHBxbG5mdmxzeHBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTY2NzgsImV4cCI6MjA5MTYzMjY3OH0.gmVsY1BKGIcLEcjG7KYqT4KcDtbZ2N8zbzL3yi-6ZSg';
-    
-    // ATENÇÃO: Verifique se a linha abaixo usa o nome 'supabaseClient'
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
+    <script>
+        const SUPABASE_URL = 'https://nlfidalnxpqlnfvlsxph.supabase.co';
+        // CHAVE LEGACY ANON CONFIRMADA
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sZmlkYWxueHBxbG5mdmxzeHBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTY2NzgsImV4cCI6MjA5MTYzMjY3OH0.gmVsY1BKGIcLEcjG7KYqT4KcDtbZ2N8zbzL3yi-6ZSg';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
 
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #d35400; --bg-color: #f4f7f6; --text-color: #333; --danger-color: #c0392b; --success-color: #27ae60; }
@@ -23,9 +23,6 @@
         .btn-admin:hover { background: var(--accent-color); }
         .search-wrapper { position: relative; max-width: 700px; margin: 0 auto 30px; }
         #search-input { width: 100%; padding: 15px 25px; border-radius: 30px; border: 2px solid #ddd; font-size: 18px; outline: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        #autocomplete-list { width: 100%; background: white; border-radius: 15px; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; max-height: 250px; overflow-y: auto; margin-top: 5px; }
-        .autocomplete-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .autocomplete-item:hover { background-color: #f1f1f1; }
         .table-container { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 10px; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th { background-color: var(--primary-color); color: white; padding: 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
@@ -50,7 +47,6 @@
 
         <div class="search-wrapper">
             <input type="text" id="search-input" placeholder="Pesquisar produto, marca ou aplicação..." autocomplete="off">
-            <div id="autocomplete-list"></div>
         </div>
 
         <div class="table-container">
@@ -98,25 +94,21 @@
 <script>
 let database = [];
 
-// CARREGAR DADOS (Ajustado para o nome da sua tabela)
 async function carregarDados() {
     const { data, error } = await supabaseClient
         .from('Basebriancomag') 
         .select('*');
 
     if (error) {
-        console.error("Erro:", error.message);
+        console.error("Erro ao carregar:", error.message);
     } else {
         database = data || [];
         renderResults(document.getElementById('search-input').value.toLowerCase());
     }
 }
 
-carregarDados();
-
-// SALVAR DADOS
 async function salvarAlteracoes() {
-    if (prompt("Senha ADM:") === "1752") {
+    if (confirm("Deseja realmente salvar todas as alterações na nuvem?")) {
         const edits = document.querySelectorAll('.cell-edit');
         const listaParaSalvar = [];
         const indicesVistos = new Set();
@@ -134,17 +126,26 @@ async function salvarAlteracoes() {
             }
         });
 
-        const { error: errorDel } = await supabaseClient.from('Basebriancomag').delete().neq('id', 0);
-        const { error: errorIns } = await supabaseClient.from('Basebriancomag').insert(listaParaSalvar);
+        // FILTRO: Não salva linhas totalmente vazias
+        const listaFiltrada = listaParaSalvar.filter(item => item.tipo || item.marca || item.aplicacao || item.resumo);
 
-        if (errorIns) alert("Erro: " + errorIns.message);
-        else { alert("✅ Salvo com sucesso!"); carregarDados(); }
+        // Deleta os registros existentes e insere os novos
+        const { error: errorDel } = await supabaseClient.from('Basebriancomag').delete().neq('id', 0);
+        
+        if (errorDel) {
+            alert("Erro ao limpar banco: " + errorDel.message);
+            return;
+        }
+
+        const { error: errorIns } = await supabaseClient.from('Basebriancomag').insert(listaFiltrada);
+
+        if (errorIns) alert("Erro ao inserir: " + errorIns.message);
+        else { alert("✅ Dados sincronizados com sucesso!"); carregarDados(); }
     }
 }
 
-// INTERFACE
 function acessarAdmin() {
-    if (prompt("Código:") === "1752") {
+    if (prompt("Código de Acesso:") === "1752") {
         document.getElementById('page-user').classList.add('hidden');
         document.getElementById('page-admin').classList.remove('hidden');
         renderAdminTable();
@@ -154,22 +155,22 @@ function acessarAdmin() {
 function voltarUsuario() {
     document.getElementById('page-admin').classList.add('hidden');
     document.getElementById('page-user').classList.remove('hidden');
+    carregarDados(); // Recarrega para garantir que a busca do usuário veja o que foi salvo
 }
 
-const searchInput = document.getElementById('search-input');
-const tableBody = document.getElementById('table-body');
-const resultsTable = document.getElementById('results-table');
-
-searchInput.addEventListener('input', function() {
+document.getElementById('search-input').addEventListener('input', function() {
     renderResults(this.value.toLowerCase());
 });
 
 function renderResults(query) {
+    const tableBody = document.getElementById('table-body');
+    const resultsTable = document.getElementById('results-table');
+    
     const matches = database.filter(item => 
         Object.values(item).some(v => v && v.toString().toLowerCase().includes(query))
     );
 
-    if (query && matches.length > 0) {
+    if (query.trim() !== "" && matches.length > 0) {
         resultsTable.style.display = 'table';
         tableBody.innerHTML = matches.map(item => `
             <tr>
@@ -178,12 +179,16 @@ function renderResults(query) {
                 <td>${highlight(item.aplicacao, query)}</td>
                 <td>${highlight(item.resumo, query)}</td>
             </tr>`).join('');
-    } else { resultsTable.style.display = 'none'; }
+    } else { 
+        resultsTable.style.display = 'none'; 
+    }
 }
 
 function highlight(text, q) { 
-    if(!q || !text) return text; 
-    return text.replace(new RegExp(`(${q})`, 'gi'), '<span class="highlight">$1</span>'); 
+    if(!q || !text) return text || ''; 
+    // Escapa caracteres especiais para não quebrar o RegExp
+    const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.toString().replace(new RegExp(`(${safeQ})`, 'gi'), '<span class="highlight">$1</span>'); 
 }
 
 function renderAdminTable() {
@@ -205,9 +210,14 @@ function adicionarNovaLinha() {
 }
 
 function deletarLinha(index) {
-    database.splice(index, 1);
-    renderAdminTable();
+    if(confirm("Remover esta linha da lista atual?")) {
+        database.splice(index, 1);
+        renderAdminTable();
+    }
 }
+
+// Inicialização
+carregarDados();
 </script>
 </body>
 </html>
