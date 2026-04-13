@@ -133,19 +133,23 @@
 <script>
 let database = [];
 
-// 1. FUNÇÃO PARA CARREGAR DADOS DA NUVEM (SUPABASE)
 async function carregarDados() {
-    const { data, error } = await supabase
-        .from('produtos')
-        .select('*')
-        .order('tipo', { ascending: true });
+    try {
+        const { data, error } = await supabase
+            .from('produtos') // Verifique se este nome é igual ao do Supabase
+            .select('*')
+            .order('tipo', { ascending: true });
 
-    if (error) {
-        console.error("Erro ao carregar:", error.message);
-        alert("Erro ao conectar com a nuvem. Verifique o RLS no Supabase.");
-    } else {
-        database = data || [];
-        renderResults(document.getElementById('search-input').value.toLowerCase());
+        if (error) {
+            // Isso vai te dizer se a tabela não existe ou se o acesso foi negado
+            alert("Erro do Supabase: " + error.message);
+            console.error(error);
+        } else {
+            database = data || [];
+            renderResults(document.getElementById('search-input').value.toLowerCase());
+        }
+    } catch (err) {
+        alert("Erro crítico de conexão: " + err.message);
     }
 }
 
