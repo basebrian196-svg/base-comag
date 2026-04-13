@@ -6,13 +6,13 @@
     <title>Base de Conhecimento Comag</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = 'https://nlfidalnxpqlnfvlsxph.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sZmlkYWxueHBxbG5mdmxzeHBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTY2NzgsImV4cCI6MjA5MTYzMjY3OH0.gmVsY1BKGIcLEcjG7KYqT4KcDtbZ2N8zbzL3yi-6ZSg';
-        
-        // CORREÇÃO AQUI: Mudamos o nome da variável para 'supabaseClient' para evitar o erro anterior
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    </script>
+<script>
+    const SUPABASE_URL = 'https://nlfidalnxpqlnfvlsxph.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sZmlkYWxueHBxbG5mdmxzeHBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTY2NzgsImV4cCI6MjA5MTYzMjY3OH0.gmVsY1BKGIcLEcjG7KYqT4KcDtbZ2N8zbzL3yi-6ZSg';
+    
+    // ATENÇÃO: Verifique se a linha abaixo usa o nome 'supabaseClient'
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #d35400; --bg-color: #f4f7f6; --text-color: #333; --danger-color: #c0392b; --success-color: #27ae60; }
