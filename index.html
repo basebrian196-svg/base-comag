@@ -7,22 +7,15 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // CONFIGURAÇÃO DAS CHAVES QUE VOCÊ PASSOU
         const SUPABASE_URL = 'https://nlfidalnxpqlnfvlsxph.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_key_-D2TbJ4lr-P1ikx_Bn8fmA_R32LK-qD';
         
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // CORREÇÃO AQUI: Mudamos o nome da variável para 'supabaseClient' para evitar o erro anterior
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
 
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #d35400;
-            --bg-color: #f4f7f6;
-            --text-color: #333;
-            --danger-color: #c0392b;
-            --success-color: #27ae60;
-        }
+        :root { --primary-color: #2c3e50; --accent-color: #d35400; --bg-color: #f4f7f6; --text-color: #333; --danger-color: #c0392b; --success-color: #27ae60; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; }
         .header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -33,18 +26,6 @@
         #autocomplete-list { width: 100%; background: white; border-radius: 15px; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; max-height: 250px; overflow-y: auto; margin-top: 5px; }
         .autocomplete-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #eee; }
         .autocomplete-item:hover { background-color: #f1f1f1; }
-        .filter-control-panel { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; }
-        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-color); }
-        input:checked + .slider:before { transform: translateX(18px); }
-        #advanced-filter-box { max-width: 900px; margin: 0 auto 20px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .filter-line { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; }
-        .f-field { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
-        .btn-apply-f { background: var(--primary-color); color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 5px; }
-        .btn-add-f { background: var(--success-color); color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .table-container { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 10px; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th { background-color: var(--primary-color); color: white; padding: 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
@@ -67,22 +48,8 @@
             <button class="btn-admin" onclick="acessarAdmin()">Acesso Restrito</button>
         </div>
 
-        <div class="filter-control-panel">
-            <span>Filtros Avançados</span>
-            <label class="switch">
-                <input type="checkbox" id="btn-toggle-filtros" onchange="alternarPainelFiltros()">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div id="advanced-filter-box" class="hidden">
-            <div id="filter-list"></div>
-            <button class="btn-add-f" onclick="criarLinhaFiltro()">+ Adicionar Critério</button>
-            <button class="btn-apply-f" onclick="renderResults(document.getElementById('search-input').value.toLowerCase())">APLICAR FILTROS</button>
-        </div>
-
         <div class="search-wrapper">
-            <input type="text" id="search-input" placeholder="O que você está procurando?" autocomplete="off">
+            <input type="text" id="search-input" placeholder="Pesquisar produto, marca ou aplicação..." autocomplete="off">
             <div id="autocomplete-list"></div>
         </div>
 
@@ -90,11 +57,10 @@
             <table id="results-table" style="display: none;">
                 <thead>
                     <tr>
-                        <th style="width: 15%;">Tipo</th>
-                        <th style="width: 15%;">Marca</th>
-                        <th style="width: 25%;">Aplicação Prática</th>
-                        <th style="width: 20%;">Resumo Técnico</th>
-                        <th style="width: 25%;">Venda Agregada (Listas)</th>
+                        <th style="width: 20%;">Tipo</th>
+                        <th style="width: 20%;">Marca</th>
+                        <th style="width: 30%;">Aplicação</th>
+                        <th style="width: 30%;">Resumo Técnico</th>
                     </tr>
                 </thead>
                 <tbody id="table-body"></tbody>
@@ -105,23 +71,22 @@
     <div id="page-admin" class="hidden">
         <div class="header-nav">
             <h1>Painel Administrativo</h1>
-            <button class="btn-admin" onclick="voltarUsuario()">Voltar ao Site</button>
+            <button class="btn-admin" onclick="voltarUsuario()">Sair do Admin</button>
         </div>
         <div class="admin-actions">
             <button class="btn-add" onclick="adicionarNovaLinha()">+ Adicionar Novo Item</button>
-            <button class="btn-save" onclick="salvarAlteracoes()">💾 Salvar Tudo na Nuvem</button>
+            <button class="btn-save" onclick="salvarAlteracoes()">💾 Salvar na Nuvem</button>
         </div>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 40px;">Nº</th>
+                        <th style="width: 40px;">#</th>
                         <th style="width: 50px;">Ação</th>
                         <th>Tipo</th>
                         <th>Marca</th>
                         <th>Aplicação</th>
                         <th>Resumo</th>
-                        <th>Venda Agregada (Listas)</th>
                     </tr>
                 </thead>
                 <tbody id="admin-table-body"></tbody>
@@ -133,34 +98,25 @@
 <script>
 let database = [];
 
+// CARREGAR DADOS (Ajustado para o nome da sua tabela)
 async function carregarDados() {
-    try {
-        const { data, error } = await supabase
-            .from('produtos') // Verifique se este nome é igual ao do Supabase
-            .select('*')
-            .order('tipo', { ascending: true });
+    const { data, error } = await supabaseClient
+        .from('Basebriancomag') 
+        .select('*');
 
-        if (error) {
-            // Isso vai te dizer se a tabela não existe ou se o acesso foi negado
-            alert("Erro do Supabase: " + error.message);
-            console.error(error);
-        } else {
-            database = data || [];
-            renderResults(document.getElementById('search-input').value.toLowerCase());
-        }
-    } catch (err) {
-        alert("Erro crítico de conexão: " + err.message);
+    if (error) {
+        console.error("Erro:", error.message);
+    } else {
+        database = data || [];
+        renderResults(document.getElementById('search-input').value.toLowerCase());
     }
 }
 
-// Inicia a carga de dados ao abrir a página
 carregarDados();
 
-// 2. FUNÇÃO SALVAR (CONEXÃO SUPABASE)
+// SALVAR DADOS
 async function salvarAlteracoes() {
-    const senha = prompt("Código ADM para SALVAR na nuvem:");
-    
-    if (senha === "1752") {
+    if (prompt("Senha ADM:") === "1752") {
         const edits = document.querySelectorAll('.cell-edit');
         const listaParaSalvar = [];
         const indicesVistos = new Set();
@@ -169,69 +125,30 @@ async function salvarAlteracoes() {
             const i = el.dataset.index;
             if (!indicesVistos.has(i)) {
                 indicesVistos.add(i);
-                const item = {
+                listaParaSalvar.push({
                     tipo: document.querySelector(`.cell-edit[data-index="${i}"][data-field="tipo"]`).value,
                     marca: document.querySelector(`.cell-edit[data-index="${i}"][data-field="marca"]`).value,
                     aplicacao: document.querySelector(`.cell-edit[data-index="${i}"][data-field="aplicacao"]`).value,
-                    resumo: document.querySelector(`.cell-edit[data-index="${i}"][data-field="resumo"]`).value,
-                    agregada: document.querySelector(`.cell-edit[data-index="${i}"][data-field="agregada"]`).value
-                };
-                // Só salva se pelo menos o 'tipo' estiver preenchido
-                if (item.tipo.trim() !== "") listaParaSalvar.push(item);
+                    resumo: document.querySelector(`.cell-edit[data-index="${i}"][data-field="resumo"]`).value
+                });
             }
         });
 
-        // Limpa a tabela e insere os novos dados
-        const { error: errorDel } = await supabase.from('produtos').delete().neq('id', 0);
-        const { error: errorIns } = await supabase.from('produtos').insert(listaParaSalvar);
+        const { error: errorDel } = await supabaseClient.from('Basebriancomag').delete().neq('id', 0);
+        const { error: errorIns } = await supabaseClient.from('Basebriancomag').insert(listaParaSalvar);
 
-        if (errorDel || errorIns) {
-            alert("Erro ao salvar na nuvem: " + (errorDel?.message || errorIns?.message));
-        } else {
-            alert("✅ Sucesso! Base de dados sincronizada na nuvem.");
-            carregarDados(); 
-        }
-    } else {
-        alert("Código incorreto.");
+        if (errorIns) alert("Erro: " + errorIns.message);
+        else { alert("✅ Salvo com sucesso!"); carregarDados(); }
     }
 }
 
-// --- FUNÇÕES DE INTERFACE (MANTIDAS DO ORIGINAL) ---
-
-function alternarPainelFiltros() {
-    const painel = document.getElementById('advanced-filter-box');
-    const ligado = document.getElementById('btn-toggle-filtros').checked;
-    painel.classList.toggle('hidden', !ligado);
-    if(ligado && document.querySelectorAll('.filter-line').length === 0) criarLinhaFiltro();
-}
-
-function criarLinhaFiltro() {
-    const lista = document.getElementById('filter-list');
-    const div = document.createElement('div');
-    div.className = 'filter-line';
-    div.innerHTML = `
-        <select class="f-logic f-field"><option value="AND">E</option><option value="OR">OU</option></select>
-        <select class="f-col f-field">
-            <option value="tipo">Tipo</option><option value="marca">Marca</option>
-            <option value="aplicacao">Aplicação</option><option value="resumo">Resumo</option>
-            <option value="agregada">Venda Agregada</option>
-        </select>
-        <select class="f-op f-field">
-            <option value="contem">Contém</option><option value="ncontem">Não contém</option>
-            <option value="comeca">Começa com</option>
-        </select>
-        <input type="text" class="f-val f-field" placeholder="Texto...">
-        <button onclick="this.parentElement.remove();" style="border:none; background:none; cursor:pointer;">❌</button>
-    `;
-    lista.appendChild(div);
-}
-
+// INTERFACE
 function acessarAdmin() {
-    if (prompt("Código de Validação:") === "1752") {
+    if (prompt("Código:") === "1752") {
         document.getElementById('page-user').classList.add('hidden');
         document.getElementById('page-admin').classList.remove('hidden');
         renderAdminTable();
-    } else { alert("Acesso negado."); }
+    }
 }
 
 function voltarUsuario() {
@@ -240,64 +157,19 @@ function voltarUsuario() {
 }
 
 const searchInput = document.getElementById('search-input');
-const autocompleteList = document.getElementById('autocomplete-list');
 const tableBody = document.getElementById('table-body');
 const resultsTable = document.getElementById('results-table');
 
 searchInput.addEventListener('input', function() {
-    const val = this.value.trim().toLowerCase();
-    autocompleteList.innerHTML = '';
-    
-    if (!val && !document.getElementById('btn-toggle-filtros').checked) { 
-        resultsTable.style.display = 'none'; 
-        return; 
-    }
-        
-    database.filter(item => item.tipo.toLowerCase().includes(val)).forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'autocomplete-item';
-        div.innerHTML = item.tipo;
-        div.onclick = () => { 
-            searchInput.value = item.tipo; 
-            renderResults(item.tipo.toLowerCase()); 
-            autocompleteList.innerHTML = ''; 
-        };
-        autocompleteList.appendChild(div);
-    });
-    renderResults(val);
+    renderResults(this.value.toLowerCase());
 });
 
 function renderResults(query) {
-    const filtrosLigados = document.getElementById('btn-toggle-filtros').checked;
-    const linhasFiltro = document.querySelectorAll('.filter-line');
+    const matches = database.filter(item => 
+        Object.values(item).some(v => v && v.toString().toLowerCase().includes(query))
+    );
 
-    const matches = database.filter(item => {
-        const matchBusca = query === "" || Object.values(item).some(v => v && v.toString().toLowerCase().includes(query));
-        if (!filtrosLigados || linhasFiltro.length === 0) return matchBusca;
-
-        let resultadoFiltro = true;
-        linhasFiltro.forEach((linha, i) => {
-            const logica = linha.querySelector('.f-logic').value;
-            const col = linha.querySelector('.f-col').value;
-            const op = linha.querySelector('.f-op').value;
-            const val = linha.querySelector('.f-val').value.toLowerCase();
-            const textoCelula = (item[col] || "").toString().toLowerCase();
-
-            let linhaBate = false;
-            if (op === 'contem') linhaBate = textoCelula.includes(val);
-            else if (op === 'ncontem') linhaBate = !textoCelula.includes(val);
-            else if (op === 'comeca') linhaBate = textoCelula.startsWith(val);
-
-            if (i === 0) resultadoFiltro = linhaBate;
-            else {
-                if (logica === 'AND') resultadoFiltro = resultadoFiltro && linhaBate;
-                else resultadoFiltro = resultadoFiltro || linhaBate;
-            }
-        });
-        return matchBusca && resultadoFiltro;
-    });
-
-    if (matches.length > 0) {
+    if (query && matches.length > 0) {
         resultsTable.style.display = 'table';
         tableBody.innerHTML = matches.map(item => `
             <tr>
@@ -305,46 +177,37 @@ function renderResults(query) {
                 <td>${highlight(item.marca, query)}</td>
                 <td>${highlight(item.aplicacao, query)}</td>
                 <td>${highlight(item.resumo, query)}</td>
-                <td>${highlight(item.agregada, query)}</td>
             </tr>`).join('');
     } else { resultsTable.style.display = 'none'; }
 }
 
 function highlight(text, q) { 
     if(!q || !text) return text; 
-    const regex = new RegExp(`(${q})`, 'gi'); 
-    return text.replace(regex, '<span class="highlight">$1</span>'); 
+    return text.replace(new RegExp(`(${q})`, 'gi'), '<span class="highlight">$1</span>'); 
 }
 
 function renderAdminTable() {
     const adminBody = document.getElementById('admin-table-body');
-    adminBody.innerHTML = '';
-    database.forEach((item, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td style="font-weight:bold; color:var(--primary-color)">${index + 1}</td>
+    adminBody.innerHTML = database.map((item, index) => `
+        <tr>
+            <td>${index + 1}</td>
             <td><button class="btn-del" onclick="deletarLinha(${index})">🗑️</button></td>
             <td><textarea class="cell-edit" data-field="tipo" data-index="${index}">${item.tipo || ''}</textarea></td>
             <td><textarea class="cell-edit" data-field="marca" data-index="${index}">${item.marca || ''}</textarea></td>
             <td><textarea class="cell-edit" data-field="aplicacao" data-index="${index}">${item.aplicacao || ''}</textarea></td>
             <td><textarea class="cell-edit" data-field="resumo" data-index="${index}">${item.resumo || ''}</textarea></td>
-            <td><textarea class="cell-edit" data-field="agregada" data-index="${index}">${item.agregada || ''}</textarea></td>`;
-        adminBody.appendChild(tr);
-    });
+        </tr>`).join('');
 }
 
 function adicionarNovaLinha() { 
-    database.unshift({ tipo: "", marca: "", aplicacao: "", resumo: "", agregada: "" }); 
+    database.unshift({ tipo: "", marca: "", aplicacao: "", resumo: "" }); 
     renderAdminTable(); 
 }
 
 function deletarLinha(index) {
-    if (confirm("⚠️ Excluir este item da lista? (Será removido na nuvem ao Salvar)")) {
-        database.splice(index, 1);
-        renderAdminTable();
-    }
+    database.splice(index, 1);
+    renderAdminTable();
 }
 </script>
-
 </body>
 </html>
