@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://nlfidalnxpqlnfvlsxph.supabase.co';
-        // CHAVE LEGACY ANON CONFIRMADA
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sZmlkYWxueHBxbG5mdmxzeHBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTY2NzgsImV4cCI6MjA5MTYzMjY3OH0.gmVsY1BKGIcLEcjG7KYqT4KcDtbZ2N8zbzL3yi-6ZSg';
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -24,7 +23,7 @@
         .search-wrapper { position: relative; max-width: 700px; margin: 0 auto 30px; }
         #search-input { width: 100%; padding: 15px 25px; border-radius: 30px; border: 2px solid #ddd; font-size: 18px; outline: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .table-container { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
         th { background-color: var(--primary-color); color: white; padding: 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
         td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: top; white-space: pre-wrap; word-wrap: break-word; }
         .highlight { background-color: #ffeb3b; font-weight: bold; padding: 0 2px; }
@@ -53,10 +52,11 @@
             <table id="results-table" style="display: none;">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">Tipo</th>
-                        <th style="width: 20%;">Marca</th>
-                        <th style="width: 30%;">Aplicação</th>
-                        <th style="width: 30%;">Resumo Técnico</th>
+                        <th style="width: 15%;">Tipo</th>
+                        <th style="width: 15%;">Marca</th>
+                        <th style="width: 20%;">Aplicação</th>
+                        <th style="width: 25%;">Resumo Técnico</th>
+                        <th style="width: 25%;">Venda Agregada (Listas)</th>
                     </tr>
                 </thead>
                 <tbody id="table-body"></tbody>
@@ -83,6 +83,7 @@
                         <th>Marca</th>
                         <th>Aplicação</th>
                         <th>Resumo</th>
+                        <th>Venda Agregada</th>
                     </tr>
                 </thead>
                 <tbody id="admin-table-body"></tbody>
@@ -121,15 +122,14 @@ async function salvarAlteracoes() {
                     tipo: document.querySelector(`.cell-edit[data-index="${i}"][data-field="tipo"]`).value,
                     marca: document.querySelector(`.cell-edit[data-index="${i}"][data-field="marca"]`).value,
                     aplicacao: document.querySelector(`.cell-edit[data-index="${i}"][data-field="aplicacao"]`).value,
-                    resumo: document.querySelector(`.cell-edit[data-index="${i}"][data-field="resumo"]`).value
+                    resumo: document.querySelector(`.cell-edit[data-index="${i}"][data-field="resumo"]`).value,
+                    venda_agregada: document.querySelector(`.cell-edit[data-index="${i}"][data-field="venda_agregada"]`).value
                 });
             }
         });
 
-        // FILTRO: Não salva linhas totalmente vazias
-        const listaFiltrada = listaParaSalvar.filter(item => item.tipo || item.marca || item.aplicacao || item.resumo);
+        const listaFiltrada = listaParaSalvar.filter(item => item.tipo || item.marca || item.aplicacao || item.resumo || item.venda_agregada);
 
-        // Deleta os registros existentes e insere os novos
         const { error: errorDel } = await supabaseClient.from('Basebriancomag').delete().neq('id', 0);
         
         if (errorDel) {
@@ -155,7 +155,7 @@ function acessarAdmin() {
 function voltarUsuario() {
     document.getElementById('page-admin').classList.add('hidden');
     document.getElementById('page-user').classList.remove('hidden');
-    carregarDados(); // Recarrega para garantir que a busca do usuário veja o que foi salvo
+    carregarDados();
 }
 
 document.getElementById('search-input').addEventListener('input', function() {
@@ -178,6 +178,7 @@ function renderResults(query) {
                 <td>${highlight(item.marca, query)}</td>
                 <td>${highlight(item.aplicacao, query)}</td>
                 <td>${highlight(item.resumo, query)}</td>
+                <td>${highlight(item.venda_agregada, query)}</td>
             </tr>`).join('');
     } else { 
         resultsTable.style.display = 'none'; 
@@ -186,7 +187,6 @@ function renderResults(query) {
 
 function highlight(text, q) { 
     if(!q || !text) return text || ''; 
-    // Escapa caracteres especiais para não quebrar o RegExp
     const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return text.toString().replace(new RegExp(`(${safeQ})`, 'gi'), '<span class="highlight">$1</span>'); 
 }
@@ -201,11 +201,12 @@ function renderAdminTable() {
             <td><textarea class="cell-edit" data-field="marca" data-index="${index}">${item.marca || ''}</textarea></td>
             <td><textarea class="cell-edit" data-field="aplicacao" data-index="${index}">${item.aplicacao || ''}</textarea></td>
             <td><textarea class="cell-edit" data-field="resumo" data-index="${index}">${item.resumo || ''}</textarea></td>
+            <td><textarea class="cell-edit" data-field="venda_agregada" data-index="${index}">${item.venda_agregada || ''}</textarea></td>
         </tr>`).join('');
 }
 
 function adicionarNovaLinha() { 
-    database.unshift({ tipo: "", marca: "", aplicacao: "", resumo: "" }); 
+    database.unshift({ tipo: "", marca: "", aplicacao: "", resumo: "", venda_agregada: "" }); 
     renderAdminTable(); 
 }
 
@@ -216,7 +217,6 @@ function deletarLinha(index) {
     }
 }
 
-// Inicialização
 carregarDados();
 </script>
 </body>
